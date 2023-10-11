@@ -1,25 +1,6 @@
-from django.contrib.auth import get_user_model
 from django.db import models
 
-User = get_user_model()
-
-
-class Author(models.Model):
-    email = models.EmailField(
-        'Mail',
-        unique=True
-    )
-    username = models.CharField(max_length=150, unique=True)
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
-    is_subscribed = models.BooleanField(default=False)
-
-    class Meta:
-        verbose_name = 'Автор'
-        verbose_name_plural = 'Авторы'
-
-    def __str__(self):
-        return self.username
+from users.models import User
 
 
 class Ingredient(models.Model):
@@ -41,7 +22,7 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique=True)
     color = models.CharField(max_length=7, unique=True)
     slug = models.SlugField(max_length=200, unique=True)
 
@@ -65,7 +46,7 @@ class Recipe(models.Model):
         'Время приготовления',
     )
     author = models.ForeignKey(
-        Author,
+        User,
         on_delete=models.CASCADE,
     )
     tags = models.ManyToManyField(Tag)
