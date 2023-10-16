@@ -3,7 +3,16 @@ from rest_framework.fields import SerializerMethodField
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.validators import UniqueTogetherValidator
 
-from .models import User, Ingredient, Tag, Recipe, IngredientInRecipe, Subscription, Favorite, ShoppingCart
+from .models import (
+    User,
+    Ingredient,
+    Tag,
+    Recipe,
+    IngredientInRecipe,
+    Subscription,
+    Favorite,
+    ShoppingCart
+)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -31,7 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(read_only=True,)
+    id = serializers.PrimaryKeyRelatedField(read_only=True, )
 
     class Meta:
         model = Ingredient
@@ -102,13 +111,17 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         user = self.context.get('request').user
-        return (user.is_authenticated and
-                user.favorites.filter(recipe=obj).exists())
+        return (
+                user.is_authenticated
+                and user.favorites.filter(recipe=obj).exists()
+        )
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context.get('request').user
-        return (user.is_authenticated and
-                user.cart.filter(recipe=obj).exists())
+        return (
+                user.is_authenticated
+                and user.cart.filter(recipe=obj).exists()
+        )
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):

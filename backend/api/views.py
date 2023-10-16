@@ -5,18 +5,33 @@ from rest_framework import viewsets, status
 from djoser.views import UserViewSet
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, SAFE_METHODS, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    IsAuthenticated,
+    SAFE_METHODS,
+    IsAuthenticatedOrReadOnly
+)
 
 from rest_framework.response import Response
 
 from .utils import create_object, delete_object
-from .models import User, Recipe, Tag, Ingredient, Subscription, ShoppingCart, Favorite
+from .models import (User,
+                     Recipe,
+                     Tag,
+                     Ingredient,
+                     Subscription,
+                     ShoppingCart,
+                     Favorite
+                     )
 from .serializers import (
     UserSerializer,
     TagSerializer,
     IngredientSerializer,
     SubscriptionReadSerializer,
-    SubscriptionSerializer, RecipeFavoriteSerializer, ShoppingCartSerializer, FavoriteSerializer, RecipeReadSerializer,
+    SubscriptionSerializer,
+    RecipeFavoriteSerializer,
+    ShoppingCartSerializer,
+    FavoriteSerializer,
+    RecipeReadSerializer,
     RecipeWriteSerializer
 )
 
@@ -134,7 +149,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         delete_object(request, pk, Recipe, ShoppingCart)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=[IsAuthenticated]
+    )
     def download_shopping_cart(self, request):
         ingredients = ShoppingCart.objects.filter(
             user=request.user
@@ -146,14 +165,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'recipe_id__ingredients__amount_ingredients__amount'
             )
         )
-        shopping_list = [_('Список покупок:')]
+        shopping_list = 'Список покупок:'
 
         for ingredient in ingredients:
-            shopping_list.append(f'{ingredient["recipe_id__ingredients__name"]} '
-                                 f'({ingredient["recipe_id__ingredients__measurement_unit"]}) - '
-                                 f'{ingredient["total_amount"]}')
+            shopping_list.append(
+                f'{ingredient["recipe_id__ingredients__name"]} '
+                f'({ingredient["recipe_id__ingredients__measurement_unit"]})'
+                f'{ingredient["total_amount"]}'
+            )
         content = '\n'.join(shopping_list)
         response = HttpResponse(content, content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+        response[
+            'Content-Disposition'
+        ] = 'attachment; filename="shopping_list.txt"'
 
         return response

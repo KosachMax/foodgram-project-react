@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Ingredient, Tag, Recipe, IngredientInRecipe
+from .models import User, Ingredient, Tag, Recipe
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -35,11 +35,3 @@ class RecipeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Recipe, RecipeAdmin)
-
-
-# class IngredientInRecipeAdmin(admin.ModelAdmin):
-#     list_display = ('ingredient', 'amount', 'recipe',)
-#     search_fields = ('recipe', 'ingredient')
-#
-#
-# admin.site.register(IngredientInRecipe, IngredientInRecipeAdmin)
