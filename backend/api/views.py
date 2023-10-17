@@ -14,14 +14,14 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 
 from .utils import create_object, delete_object
-from .models import (User,
+from .models import (
                      Recipe,
                      Tag,
                      Ingredient,
                      Subscription,
                      ShoppingCart,
                      Favorite
-                     )
+)
 from .serializers import (
     UserSerializer,
     TagSerializer,
@@ -125,10 +125,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 RecipeFavoriteSerializer,
                 Recipe
             )
-            return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED
-            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         delete_object(request, pk, Recipe, Favorite)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -142,10 +139,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 RecipeFavoriteSerializer,
                 Recipe
             )
-            return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED
-            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         delete_object(request, pk, Recipe, ShoppingCart)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
