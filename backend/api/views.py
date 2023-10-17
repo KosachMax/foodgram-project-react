@@ -15,12 +15,12 @@ from rest_framework.response import Response
 
 from .utils import create_object, delete_object
 from .models import (
-                     Recipe,
-                     Tag,
-                     Ingredient,
-                     Subscription,
-                     ShoppingCart,
-                     Favorite
+    Recipe,
+    Tag,
+    Ingredient,
+    Subscription,
+    ShoppingCart,
+    Favorite
 )
 from .serializers import (
     UserSerializer,
