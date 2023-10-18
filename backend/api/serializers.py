@@ -3,7 +3,7 @@ from rest_framework.fields import SerializerMethodField
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.validators import UniqueTogetherValidator
 
-from .models import (
+from recipes.models import (
     User,
     Ingredient,
     Tag,

@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 
-from .models import Recipe, Subscription
+from recipes.models import Recipe, Subscription
 
 
 def create_object(request, pk, serializer_in, serializer_out, model):

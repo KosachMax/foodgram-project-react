@@ -14,8 +14,9 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 
 from recipes.permissions import IsOwnerOrReadOnly
+
 from .utils import create_object, delete_object
-from .models import (
+from recipes.models import (
     Recipe,
     Tag,
     Ingredient,
@@ -43,20 +44,19 @@ class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    @action(detail=True, methods=['post', 'delete'])
+    @action(detail=True, methods=['post'])
     def subscribe(self, request, id):
-        if request.method == 'POST':
-            serializer = create_object(
-                request,
-                id,
-                SubscriptionSerializer,
-                SubscriptionReadSerializer,
-                User
-            )
-            return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED
-            )
+        serializer = create_object(
+            request,
+            id,
+            SubscriptionSerializer,
+            SubscriptionReadSerializer,
+            User
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @subscribe.mapping.delete
+    def unsubscribe(self, request, id):
         delete_object(request, id, User, Subscription)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -112,31 +112,35 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return RecipeWriteSerializer
 
-    @action(detail=True, methods=['post', 'delete'])
-    def favorite(self, request, pk):
-        if request.method == 'POST':
-            serializer = create_object(
-                request,
-                pk,
-                FavoriteSerializer,
-                RecipeFavoriteSerializer,
-                Recipe
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+    @action(detail=True, methods=['post'])
+    def create_favorite(self, request, pk):
+        serializer = create_object(
+            request,
+            pk,
+            FavoriteSerializer,
+            RecipeFavoriteSerializer,
+            Recipe
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['delete'])
+    def delete_favorite(self, request, pk):
         delete_object(request, pk, Recipe, Favorite)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post', 'delete'])
+    @action(detail=True, methods=['post'])
     def shopping_cart(self, request, pk):
-        if request.method == 'POST':
-            serializer = create_object(
-                request,
-                pk,
-                ShoppingCartSerializer,
-                RecipeFavoriteSerializer,
-                Recipe
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serializer = create_object(
+            request,
+            pk,
+            ShoppingCartSerializer,
+            RecipeFavoriteSerializer,
+            Recipe
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['delete'])
+    def delete_shopping_cart(self, request, pk):
         delete_object(request, pk, Recipe, ShoppingCart)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
