@@ -13,6 +13,7 @@ from rest_framework.permissions import (
 
 from rest_framework.response import Response
 
+from recipes.permissions import IsOwnerOrReadOnly
 from .utils import create_object, delete_object
 from .models import (
     Recipe,
@@ -88,10 +89,6 @@ class IngredientsViewSet(viewsets.ModelViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-
-
-class IsOwnerOrReadOnly:
-    pass
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
