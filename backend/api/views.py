@@ -13,7 +13,7 @@ from rest_framework.permissions import (
 
 from rest_framework.response import Response
 
-from recipes.permissions import IsOwnerOrReadOnly
+from .permissions import IsOwnerOrReadOnly
 
 from .utils import create_object, delete_object
 from recipes.models import (
@@ -40,7 +40,7 @@ from .serializers import (
 User = get_user_model()
 
 
-class CustomUserViewSet(UserViewSet):
+class FoodgramUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 

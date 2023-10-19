@@ -1,4 +1,4 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -15,6 +15,16 @@ class User(AbstractUser):
         max_length=254,
         blank=False,
         null=False
+    )
+    username = models.CharField(
+        'Юзернейм',
+        max_length=MAX_LENGTH_USER,
+        unique=True,
+        blank=False,
+        null=False,
+        validators=RegexValidator(
+            regex=r'^[\w.@+-]+$',
+        )
     )
     first_name = models.CharField(
         'Имя',
