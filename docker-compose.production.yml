@@ -1,4 +1,4 @@
-version: '3'
+version: '3.3'
 
 volumes:
   pg_foodgram:
@@ -6,7 +6,7 @@ volumes:
   media:
 
 services:
-  db_foodgram:
+  db:
     image: postgres:13.10
     env_file: .env
     volumes:
@@ -17,7 +17,7 @@ services:
     env_file: .env
     volumes:
       - static:/backend_static
-      - media:/app/media/recipes/images/
+      - media:/app/media
     depends_on:
       - db_foodgram
 
@@ -28,13 +28,12 @@ services:
     volumes:
       - static:/frontend_static
 
-  infra:
+  nginx:
     image: kosachmax/foodgram_gateway
-    env_file: .env
-    ports:
-      - 8000:80
     volumes:
-      - static:/staticfiles
-      - media:/media/recipes/images/
+      - static:/usr/share/nginx/html/
+      - media:/media
+    ports:
+      - "8000:80"
     depends_on:
       - backend

@@ -2,7 +2,7 @@ import csv
 
 from django.core.management import BaseCommand
 
-from api.models import Ingredient
+from recipes.models import Ingredient
 
 FILE_PATH = '/Users/mac/Diploma/foodgram-project-react/data/ingredients.csv'
 

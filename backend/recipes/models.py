@@ -7,8 +7,15 @@ MAX_LENGTH = 200
 
 
 class User(AbstractUser):
+    username_validator = RegexValidator(
+        regex=r'^[\w.@+-]+$',
+        message='Введит правильный username. \
+        В нем могут быть только буквы, цифры, и эти символы: @/./+/-/_',
+    )
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
     email = models.EmailField(
         'email',
         unique=True,
@@ -17,14 +24,12 @@ class User(AbstractUser):
         null=False
     )
     username = models.CharField(
-        'Юзернейм',
+        verbose_name='Юзернейм',
         max_length=MAX_LENGTH_USER,
         unique=True,
         blank=False,
         null=False,
-        validators=RegexValidator(
-            regex=r'^[\w.@+-]+$',
-        )
+        validators=[username_validator]
     )
     first_name = models.CharField(
         'Имя',
