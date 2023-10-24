@@ -9,8 +9,8 @@ MAX_LENGTH = 200
 class User(AbstractUser):
     username_validator = RegexValidator(
         regex=r'^[\w.@+-]+$',
-        message='Введит правильный username. \
-        В нем могут быть только буквы, цифры, и эти символы: @/./+/-/_',
+        message=f'Введит правильный username.'
+                f'В нем могут быть только буквы, цифры, и эти символы: @/./+/-/_',
     )
 
     USERNAME_FIELD = 'email'
@@ -239,5 +239,5 @@ class ShoppingCart(models.Model):
         ordering = ['user']
 
     def __str__(self):
-        return (f'Ингредиенты из рецепта \
-        "{self.recipe}" успешно добавлены в корзину!')
+        return (f'Ингредиенты из рецепта'
+                f'"{self.recipe}" успешно добавлены в корзину!')
