@@ -2,9 +2,10 @@ import csv
 
 from django.core.management import BaseCommand
 
+from foodgram import settings
 from recipes.models import Ingredient
 
-FILE_PATH = '/Users/mac/Diploma/foodgram-project-react/data/ingredients.csv'
+data_path = settings.BASE_DIR
 
 Model_to_csv = {
     Ingredient: 'ingredients.csv',
@@ -15,7 +16,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         for model, csv_file in Model_to_csv.items():
             with open(
-                    FILE_PATH,
+                    f'{data_path}/backend/data/ingredients.csv',
                     'r',
                     encoding='utf-8',
             ) as csv_files:
