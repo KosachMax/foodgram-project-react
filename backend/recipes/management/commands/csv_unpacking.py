@@ -16,7 +16,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         for model, csv_file in Model_to_csv.items():
             with open(
-                    f'{data_path}/backend/data/ingredients.csv',
+                    f'{data_path}/data/ingredients.csv',
                     'r',
                     encoding='utf-8',
             ) as csv_files:
