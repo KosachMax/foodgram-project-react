@@ -9,8 +9,11 @@ MAX_LENGTH = 200
 class User(AbstractUser):
     username_validator = RegexValidator(
         regex=r'^[\w.@+-]+$',
-        message=f'Введит правильный username.'
-                f'В нем могут быть только буквы, цифры, и эти символы: @/./+/-/_',
+        message=(
+            'Введите правильный username.'
+            'В нем могут быть только буквы, цифры, '
+            'и эти символы: @/./+/-/_'
+        )
     )
 
     USERNAME_FIELD = 'email'
