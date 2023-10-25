@@ -96,7 +96,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         recipes = Recipe.objects.prefetch_related(
-            'amount_ingredients__ingredient', 'tags'
+            'ingredients', 'tags'
         ).all()
         tags_name = self.request.query_params.get('name')
         if tags_name is not None:
@@ -159,7 +159,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'recipe_id__ingredients__amount_ingredients__amount'
             )
         )
-        shopping_list = 'Список покупок:'
+        shopping_list = ['Список покупок:']
 
         for ingredient in ingredients:
             shopping_list.append(
