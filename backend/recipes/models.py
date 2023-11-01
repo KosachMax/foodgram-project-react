@@ -7,7 +7,7 @@ MAX_LENGTH = 200
 
 
 class User(AbstractUser):
-    username_validator = RegexValidator(
+    USERNAME_VALIDATOR = RegexValidator(
         regex=r'^[\w.@+-]+$',
         message=(
             'Введите правильный username.'
@@ -32,7 +32,7 @@ class User(AbstractUser):
         unique=True,
         blank=False,
         null=False,
-        validators=[username_validator]
+        validators=[USERNAME_VALIDATOR]
     )
     first_name = models.CharField(
         'Имя',

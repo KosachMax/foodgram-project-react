@@ -7,7 +7,7 @@ volumes:
 
 services:
 
-  db:
+  db_foodgram:
     image: postgres:13.3-alpine
     restart: always
     volumes:
@@ -24,14 +24,14 @@ services:
       - static_value:/app/static/
       - media_value:/app/media/
     depends_on:
-      - db
+      - db_foodgram
     env_file:
       - ./.env
 
   frontend:
     image: kosachmax/foodgram_frontend:latest
     volumes:
-      - ../frontend/:/app/result_build/
+      - ../frontend/:/build/
     depends_on:
       - backend
 
@@ -39,7 +39,7 @@ services:
     image: nginx:1.19.3
     restart: always
     ports:
-      - "80:80"
+      - "8000:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
@@ -48,3 +48,4 @@ services:
       - media_value:/var/html/media/
     depends_on:
       - frontend
+      - backend

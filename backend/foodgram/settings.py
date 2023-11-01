@@ -7,7 +7,9 @@ SECRET_KEY = os.getenv('SECRET_TOKEN', 'custom_token')
 
 DEBUG = os.getenv('DEBUG_SWITCHER', 'True')
 
-ALLOWED_HOSTS = ['158.160.70.31', '127.0.0.1', 'kosach.space', 'localhost']
+ALLOWED_HOSTS = ['158.160.70.31', '127.0.0.1', 'kosach.space', 'localhost', '0.0.0.0']
+
+PORT = 8000
 
 INSTALLED_APPS = [
     'django.contrib.admin',
