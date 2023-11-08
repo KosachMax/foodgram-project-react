@@ -3,12 +3,13 @@ import csv
 from django.core.management import BaseCommand
 
 from foodgram import settings
-from recipes.models import Ingredient
+from recipes.models import Ingredient, Tag
 
 data_path = settings.BASE_DIR
 
 Model_to_csv = {
     Ingredient: 'ingredients.csv',
+    Tag: 'tags.csv'
 }
 
 
@@ -16,7 +17,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         for model, csv_file in Model_to_csv.items():
             with open(
-                    f'{data_path}/data/ingredients.csv',
+                    f'{data_path}/data/{csv_file}',
                     'r',
                     encoding='utf-8',
             ) as csv_files:

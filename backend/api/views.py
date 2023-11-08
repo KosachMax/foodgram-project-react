@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Sum
-from django.http import HttpResponse
-from rest_framework import viewsets, status
+from django.db.models import Sum, Exists, OuterRef
+from django.http import HttpResponse, FileResponse
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
@@ -12,17 +13,15 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 
-from .permissions import IsOwnerOrReadOnly
-
-from .utils import create_object, delete_object
 from recipes.models import (
     Recipe,
     Tag,
     Ingredient,
     Subscription,
     ShoppingCart,
-    Favorite, IngredientInRecipe
+    Favorite
 )
+from .permissions import IsOwnerOrReadOnly
 from .serializers import (
     UserSerializer,
     TagSerializer,
@@ -35,17 +34,19 @@ from .serializers import (
     RecipeReadSerializer,
     RecipeWriteSerializer
 )
+from .utils import CreateDeleteMixin
+from .filters import RecipeFilter
 
 User = get_user_model()
 
 
-class FoodgramUserViewSet(UserViewSet):
+class FoodgramUserViewSet(UserViewSet, CreateDeleteMixin):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
     @action(detail=True, methods=['post'])
     def subscribe(self, request, id):
-        serializer = create_object(
+        serializer = self.create_object(
             request,
             id,
             SubscriptionSerializer,
@@ -56,7 +57,7 @@ class FoodgramUserViewSet(UserViewSet):
 
     @subscribe.mapping.delete
     def unsubscribe(self, request, id):
-        delete_object(request, id, User, Subscription)
+        self.delete_object(request, id, User, Subscription)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'])
@@ -73,16 +74,12 @@ class FoodgramUserViewSet(UserViewSet):
         return self.get_paginated_response(serializer.data)
 
 
-class IngredientsViewSet(viewsets.ModelViewSet):
-    pagination_class = None
+class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-
-    def get_queryset(self):
-        queryset = Ingredient.objects.all()
-        ingredients_name = self.request.query_params.get('name')
-        if ingredients_name is not None:
-            queryset = queryset.filter(name__istartswith=ingredients_name)
-        return queryset
+    filter_backends = [filters.SearchFilter]
+    search_fields = ('^name',)
+    pagination_class = None
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -91,17 +88,31 @@ class TagViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
 
-class RecipeViewSet(viewsets.ModelViewSet):
+class RecipeViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
     pagination_class = PageNumberPagination
     permission_classes = (IsOwnerOrReadOnly, IsAuthenticatedOrReadOnly)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def get_queryset(self):
         recipes = Recipe.objects.prefetch_related(
-            'ingredients', 'tags'
+            'ingredient__ingredient', 'tags'
         ).all()
-        tags_name = self.request.query_params.get('name')
-        if tags_name is not None:
-            recipes = recipes.filter(tags__slug__istartswith=tags_name)
+        if self.request.user.is_authenticated:
+            recipes = recipes.annotate(
+                is_favorited=Exists(
+                    Favorite.objects.filter(
+                        user=self.request.user,
+                        recipe_id=OuterRef('pk'),
+                    )
+                ),
+                is_in_shopping_cart=Exists(
+                    ShoppingCart.objects.filter(
+                        user=self.request.user,
+                        recipe_id=OuterRef('pk'),
+                    )
+                ),
+            ).select_related('author')
         return recipes
 
     def perform_create(self, serializer):
@@ -113,8 +124,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeWriteSerializer
 
     @action(detail=True, methods=['post'])
-    def create_favorite(self, request, pk):
-        serializer = create_object(
+    def favorite(self, request, pk):
+        serializer = self.create_object(
             request,
             pk,
             FavoriteSerializer,
@@ -123,14 +134,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=['delete'])
+    @favorite.mapping.delete
     def delete_favorite(self, request, pk):
-        delete_object(request, pk, Recipe, Favorite)
+        self.delete_object(request, pk, Recipe, Favorite)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post'])
     def shopping_cart(self, request, pk):
-        serializer = create_object(
+        serializer = self.create_object(
             request,
             pk,
             ShoppingCartSerializer,
@@ -139,9 +150,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=['delete'])
+    @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
-        delete_object(request, pk, Recipe, ShoppingCart)
+        self.delete_object(request, pk, Recipe, ShoppingCart)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
@@ -150,19 +161,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def download_shopping_cart(self, request):
-        ingredients = (
-            IngredientInRecipe.objects
-            .filter(recipe__in=request.user.cart.all())
-            .values('ingredient__name', 'ingredient__measurement_unit')
-            .annotate(total_amount=Sum('amount'))
-        )
+        ingredients = ShoppingCart.objects.filter(
+            user=request.user
+        ).values_list(
+            'recipe_id__ingredients__name',
+            'recipe_id__ingredients__measurement_unit',
+            Sum('recipe_id__ingredients__ingredient__amount'))
+        ingredients = set(ingredients)
+
         shopping_list = ['Список покупок:']
 
         for ingredient in ingredients:
             shopping_list.append(
-                f'{ingredient["ingredient__name"]} '
-                f'({ingredient["ingredient__measurement_unit"]})'
-                f'{ingredient["total_amount"]}'
+                f'{ingredient[0]} '
+                f'({ingredient[1]})'
+                f'{ingredient[2]}'
             )
         content = '\n'.join(shopping_list)
         response = HttpResponse(content, content_type='text/plain')
@@ -170,4 +183,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'Content-Disposition'
         ] = 'attachment; filename="shopping_list.txt"'
 
-        return response
+        return FileResponse(
+            '\n'.join(shopping_list),
+            status=status.HTTP_200_OK,
+            content_type='text/plain',
+        )
