@@ -18,7 +18,10 @@ class CreateDeleteMixin:
 
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        serializer_to_response = serializer_out(obj, context={'request': request})
+        serializer_to_response = serializer_out(
+            obj,
+            context={'request': request}
+        )
         return serializer_to_response
 
     @staticmethod
